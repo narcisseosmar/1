@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Connexion | 🥇 Top Élit 🎯</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #111;
+      color: #fff;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+    h2 {
+      margin-top: 20px;
+      font-size: 24px;
+    }
+    .content, .login-form {
+      background-color: rgba(0, 0, 0, 0.8);
+      border-radius: 12px;
+      margin: 20px auto;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(255, 0, 0, 0.6);
+      width: 90%;
+      max-width: 500px;
+    }
+    label, select, input, button {
+      display: block;
+      width: 90%;
+      margin: 10px auto;
+      padding: 8px;
+      border-radius: 6px;
+      background-color: #222;
+      border: none;
+      color: #fff;
+    }
+    button {
+      background-color: #ff6600;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #ff4500;
+    }
+    .boomm-btn {
+      background-color: transparent;
+      color: red;
+      border: 2px solid red;
+    }
+    .boomm-btn:hover {
+      background-color: red;
+      color: white;
+    }
+    .highlight-rose {
+      background-color: #ffb3b3;
+    }
+    #historiqueBoomm {
+      margin-top: 20px;
+      padding: 10px;
+      border: 2px dashed orange;
+      background-color: #222;
+      border-radius: 10px;
+    }
+    .item-historique {
+      margin: 5px 0;
+      padding: 5px;
+      border-bottom: 1px solid #444;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="loginSection" class="login-form">
+    <h2>Connexion 🔐</h2>
+    <label for="username">Nom d'utilisateur :</label>
+    <input type="text" id="username" required>
+
+    <label for="password">Mot de passe :</label>
+    <input type="password" id="password" required>
+
+    <button onclick="login()">Se connecter</button>
+  </div>
+
+  <div id="appSection" class="hidden">
+    <h2>🥇 Top Élit 🎯 - Prédictions d'Événements</h2>
+
+    <label>Heure de départ (HH:mm:ss) :</label>
+    <input type="time" id="startTime" required step="1">
+
+    <label>Cote de départ :</label>
+    <input type="number" id="startCote" min="5" value="10" required>
+
+    <label>Protocole :</label>
+    <select id="protocol">
+      <option value="croissant">Croissant</option>
+      <option value="decroissant">Décroissant</option>
+      <option value="aller-retour">Aller-retour</option>
+    </select>
+
+    <div class="doudouBtns">
+      <button onclick="confirmerDoudou()">Confirmer Doudou 🌹</button>
+      <button onclick="changerSigneRose()">Changer Signe Avant 🌹</button>
+    </div>
+
+    <button onclick="genererPredictions()">Générer les prédictions</button>
+
+    <div id="resultats"></div>
+
+    <div id="historiqueBoomm">
+      <h3>Historique des Boomms Confirmés</h3>
+      <div id="listeHistorique"></div>
+    </div>
+  </div>
+
+  <script>
+
+    function login() {
+      const user = document.getElementById('username').value;
+      const pass = document.getElementById('password').value;
+
+      if (user === '      ' && pass === '      ') {
+        document.getElementById('loginSection').classList.add('hidden');
+        document.getElementById('appSection').classList.remove('hidden');
+      } else {
+        alert("Identifiants incorrects !");
+      }
+    }
+
+
+    let memoire = [];
+    let retard = 0;
+    let retardActif = false;
+    let boomCount = 0;
+    let doubleRoseActive = false;
+    let jackpotActive = false;
+    let predictionsStockees = [];
+
+    function rand(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function confirmerDoudou() {
+      retard = [1, 3, 5][rand(0, 2)];
+      retardActif = true;
+      doubleRoseActive = true;
+      alert("Doudou Rose 🌹 activé : retard de " + retard + " minute(s). Cote X5 maximum pendant 10 minutes.");
+    }
+
+    function changerSigneRose() {
+      document.body.style.backgroundColor = "#fff0f5";
+      setTimeout(() => { document.body.style.backgroundColor = "#111"; }, 1500);
+      retard = 1;
+      alert("Changement de Signe Avant 🌹 : retard de 1 minute.");
+    }
+
+    function estHeureDuJack(h, m) {
+      const heuresJack = ((h >= 3 && h < 6) || (h >= 9 && h < 12) || (h >= 15 && h < 17) || (h >= 20 && h < 23));
+      const minutesJack = [14,15,20,21,24,25,26,30,31,34,35,37,32,44,45,47,54,55,58];
+      const minutesAvant = [9,10,11,29,30,31,33,43];
+      return heuresJack && (minutesJack.includes(m) || minutesAvant.includes(m));
+    }
+
+    function genererPredictions() {
+      const startTime = document.getElementById("startTime").value;
+      const coteDepart = parseFloat(document.getElementById("startCote").value);
+      const protocole = document.getElementById("protocol").value;
+      const resultats = document.getElementById("resultats");
+
+      if (!startTime || isNaN(coteDepart)) {
+        alert("Remplis tous les champs !");
+        return;
+      }
+
+      resultats.innerHTML = "";
+      memoire = [];
+      boomCount = 0;
+      predictionsStockees = [];
+
+      const predictions = [3, 5, 7, 10];
+      const [h, m] = startTime.split(":").map(Number);
+      let startDate = new Date();
+      startDate.setHours(h);
+      startDate.setMinutes(m);
+      startDate.setSeconds(0);
+
+      predictions.forEach((minute, index) => {
+        let predictionTime = new Date(startDate.getTime() + (minute + retard) * 60000);
+        let heure = predictionTime.getHours().toString().padStart(2, '0');
+        let minuteAff = predictionTime.getMinutes().toString().padStart(2, '0');
+        let secondeAff = predictionTime.getSeconds().toString().padStart(2, '0');
+
+        let heureEstimeeAvant = new Date(predictionTime.getTime() - 30000);
+        let heureEstimeeApres = new Date(predictionTime.getTime() + 30000);
+
+        let heureAvant = heureEstimeeAvant.getHours().toString().padStart(2, '0');
+        let minuteAvant = heureEstimeeAvant.getMinutes().toString().padStart(2, '0');
+        let secondeAvant = heureEstimeeAvant.getSeconds().toString().padStart(2, '0');
+
+        let heureApres = heureEstimeeApres.getHours().toString().padStart(2, '0');
+        let minuteApres = heureEstimeeApres.getMinutes().toString().padStart(2, '0');
+        let secondeApres = heureEstimeeApres.getSeconds().toString().padStart(2, '0');
+
+        let cote = coteDepart;
+        let variation = rand(1, 12);
+
+        if (doubleRoseActive || jackpotActive) cote = Math.min(5, cote);
+
+        if (protocole === "croissant") {
+          if (cote === 10) cote = rand(13, 17);
+          else if (cote === 12) cote = rand(15, 19);
+          else if (cote === 13) cote = rand(16, 20);
+          else if (cote >= 15 && cote <= 18) cote = rand(25, 35);
+          else if (cote >= 20 && cote <= 25) cote = rand(40, 55);
+          else cote += variation;
+        } else if (protocole === "decroissant") {
+          cote -= variation;
+          if (cote < 5) cote = 5;
+        } else if (protocole === "aller-retour") {
+          if (cote === 10) cote = rand(10, 18);
+          else if (cote === 15) cote = rand(25, 35);
+          else if (cote === 18) cote = rand(35, 50);
+          else if (cote === 20) cote = rand(55, 80);
+          else if (cote >= 70 && cote <= 90) cote = rand(10, 15);
+          else cote += variation;
+        }
+
+        let heureJack = predictionTime.getHours();
+        let minuteJack = predictionTime.getMinutes();
+        let jackpotSuspect = estHeureDuJack(heureJack, minuteJack);
+        if (jackpotSuspect) {
+          cote = rand(1000, 1500);
+          jackpotActive = true;
+        }
+
+        memoire.push(cote);
+        if (memoire.length >= 7 && memoire.slice(-7).every(c => c < 20)) {
+          cote = rand(70, 400);
+        }
+
+        if (memoire.length >= 10 && boomCount < 3) {
+          cote = rand(70, 400);
+        }
+
+        cote = Math.max(5, Math.min(cote, 1500));
+
+        predictionsStockees.push({
+          index: index + 1,
+          heure: `${heureAvant}:${minuteAvant}:${secondeAvant} à ${heureApres}:${minuteApres}:${secondeApres}`,
+          cote: `x${cote.toFixed(1)}`
+        });
+
+        let bloc = document.createElement("div");
+        bloc.className = "section" + (retardActif ? " highlight-rose" : "");
+        bloc.innerHTML = `<h3>${index + 1}er 😈Top🌹</h3>
+          <div class="prediction">Heure estimée : <strong>${heureAvant}:${minuteAvant}:${secondeAvant} à ${heureApres}:${minuteApres}:${secondeApres}</strong><br>
+          Cote estimée : <strong>x${cote.toFixed(1)}🌹</strong><br>
+          Cote Min : <strong>x5</strong></div>
+          <button class="boomm-btn" onclick="confirmerBoomm(${index})" id="boommBtn${index}">Boomm</button>`;
+        resultats.appendChild(bloc);
+      });
+
+      retardActif = false;
+      doubleRoseActive = false;
+    }
+
+    function confirmerBoomm(index) {
+      boomCount++;
+      const pred = predictionsStockees[index];
+      const historique = document.getElementById("listeHistorique");
+      const item = document.createElement("div");
+      item.className = "item-historique";
+      item.innerHTML = `✅ <strong>${pred.index}er</strong> - ${pred.heure} | ${pred.cote}`;
+      historique.appendChild(item);
+    }
+  </script>
+</body>
+</html>
